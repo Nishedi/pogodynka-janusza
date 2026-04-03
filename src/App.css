@@ -193,6 +193,10 @@
   margin-top: 2px;
 }
 
+.sensor-info {
+  display: contents;
+}
+
 .sensor-number {
   font-size: 1.55rem;
   font-weight: 700;
@@ -315,4 +319,141 @@
     border-left: 1px solid rgba(255,255,255,0.06);
     border-right: 1px solid rgba(255,255,255,0.06);
   }
+}
+
+/* ──────────────────────────────────────────────
+   Senior / accessibility mode toggle button
+────────────────────────────────────────────── */
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.senior-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.senior-btn:hover {
+  background: rgba(255,255,255,0.14);
+}
+
+.senior-btn-active {
+  background: rgba(253, 203, 110, 0.18);
+  border-color: rgba(253, 203, 110, 0.55);
+  color: #fdcb6e;
+}
+
+/* ──────────────────────────────────────────────
+   Senior / accessibility mode – larger view
+────────────────────────────────────────────── */
+.senior .app-title {
+  font-size: 1.45rem;
+}
+
+.senior .location {
+  font-size: 1rem;
+}
+
+.senior .weather-main-icon {
+  font-size: 3rem;
+}
+
+.senior .weather-main-desc {
+  font-size: 0.9rem;
+  max-width: 100px;
+}
+
+.senior .status-bar {
+  font-size: 1rem;
+  padding: 10px 16px;
+}
+
+.senior .status-dot {
+  width: 12px;
+  height: 12px;
+}
+
+.senior .refresh-btn {
+  font-size: 1.2rem;
+  padding: 4px 8px;
+}
+
+.senior .section-title {
+  font-size: 1rem;
+  padding: 18px 16px 8px;
+}
+
+.senior .cards-grid,
+.senior .cards-grid-3 {
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 0 12px;
+}
+
+.senior .sensor-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 20px 24px;
+}
+
+.senior .sensor-card::before {
+  background: radial-gradient(ellipse at left center, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%);
+}
+
+.senior .sensor-icon {
+  font-size: 2.8rem;
+  flex-shrink: 0;
+}
+
+.senior .sensor-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.senior .sensor-label {
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.senior .sensor-value {
+  align-items: baseline;
+}
+
+.senior .sensor-number,
+.senior .cards-grid-3 .sensor-number {
+  font-size: 3rem;
+}
+
+.senior .sensor-number.sensor-na {
+  font-size: 3rem;
+}
+
+.senior .sensor-unit {
+  font-size: 1.3rem;
+}
+
+.senior .sensor-sub {
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.senior .footer {
+  font-size: 0.85rem;
+  padding: 24px 16px 12px;
+  opacity: 0.7;
 }

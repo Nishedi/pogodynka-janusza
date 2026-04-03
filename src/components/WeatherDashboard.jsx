@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import SensorCard from './SensorCard';
 import StatusBar from './StatusBar';
 import { useWeatherData } from '../hooks/useWeatherData';
@@ -26,6 +27,7 @@ function co2Label(ppm) {
 
 export default function WeatherDashboard() {
   const { data, loading, error, lastUpdated, refresh, mqttConnected, mqttEnabled } = useWeatherData();
+  const [seniorMode, setSeniorMode] = useState(false);
 
   if (loading) {
     return (
@@ -50,19 +52,29 @@ export default function WeatherDashboard() {
   const d = data ?? {};
 
   return (
-    <div className="dashboard">
+    <div className={`dashboard${seniorMode ? ' senior' : ''}`}>
       {/* Header */}
       <header className="header">
         <div className="header-main">
           <h1 className="app-title">🏠 Domowa pogodynka Janusza</h1>
           <div className="location">📍 Babimost, lubuskie</div>
         </div>
-        {d.weatherIcon && (
-          <div className="weather-overview">
-            <span className="weather-main-icon">{d.weatherIcon}</span>
-            <span className="weather-main-desc">{d.weatherDescription}</span>
-          </div>
-        )}
+        <div className="header-right">
+          {d.weatherIcon && (
+            <div className="weather-overview">
+              <span className="weather-main-icon">{d.weatherIcon}</span>
+              <span className="weather-main-desc">{d.weatherDescription}</span>
+            </div>
+          )}
+          <button
+            className={`senior-btn${seniorMode ? ' senior-btn-active' : ''}`}
+            onClick={() => setSeniorMode(m => !m)}
+            aria-label={seniorMode ? 'Wyłącz tryb dla seniora' : 'Włącz tryb dla seniora'}
+            title={seniorMode ? 'Wyłącz tryb dla seniora' : 'Włącz tryb dla seniora'}
+          >
+            {seniorMode ? 'A−' : 'A+'}
+          </button>
+        </div>
       </header>
 
       {/* Status bar */}
