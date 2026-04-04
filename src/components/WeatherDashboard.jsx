@@ -27,7 +27,7 @@ function co2Label(ppm) {
 
 export default function WeatherDashboard() {
   const { data, loading, error, lastUpdated, refresh, mqttConnected, mqttEnabled } = useWeatherData();
-  const [seniorMode, setSeniorMode] = useState(false);
+  const [seniorMode, setSeniorMode] = useState(true);
 
   if (loading) {
     return (
