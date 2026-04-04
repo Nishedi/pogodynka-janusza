@@ -13,6 +13,7 @@ function getTargetDate(offset) {
 function formatDateLabel(offset) {
   if (offset === 0) return 'Dziś';
   if (offset === -1) return 'Wczoraj';
+  if (offset === 1) return 'Jutro';
   const d = new Date();
   d.setDate(d.getDate() + offset);
   return d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' });
@@ -116,7 +117,7 @@ export default function WeatherDashboard() {
         <button
           className="day-nav-btn"
           onClick={() => setDateOffset(o => o + 1)}
-          disabled={dateOffset >= 0}
+          disabled={dateOffset >= 7}
           aria-label="Następny dzień"
         >
           ▶
