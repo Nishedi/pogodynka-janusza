@@ -63,7 +63,21 @@ function getWindDirection(degrees) {
   return dirs[Math.round(degrees / 45) % 8];
 }
 
-export function useOpenMeteo() {
+const HOURLY_FIELDS = [
+  'temperature_2m',
+  'relative_humidity_2m',
+  'apparent_temperature',
+  'surface_pressure',
+  'wind_speed_10m',
+  'wind_direction_10m',
+  'wind_gusts_10m',
+  'weather_code',
+  'cloud_cover',
+  'uv_index',
+  'precipitation',
+];
+
+export function useOpenMeteo(targetDate = null) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -71,52 +85,103 @@ export function useOpenMeteo() {
 
   const fetchWeather = useCallback(async () => {
     try {
-      const params = new URLSearchParams({
-        latitude: LATITUDE,
-        longitude: LONGITUDE,
-        current: [
-          'temperature_2m',
-          'relative_humidity_2m',
-          'apparent_temperature',
-          'surface_pressure',
-          'wind_speed_10m',
-          'wind_direction_10m',
-          'wind_gusts_10m',
-          'weather_code',
-          'cloud_cover',
-          'uv_index',
-          'precipitation',
-        ].join(','),
-        daily: ['sunrise', 'sunset', 'uv_index_max'].join(','),
-        timezone: 'Europe/Warsaw',
-        forecast_days: 1,
-      });
+      let temperature, feelsLike, humidity, pressure, windSpeed, windDirection,
+        windGusts, cloudCover, uvIndex, precipitation, wCode, sunrise, sunset, uvIndexMax;
 
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+      if (!targetDate) {
+        // Current weather
+        const params = new URLSearchParams({
+          latitude: LATITUDE,
+          longitude: LONGITUDE,
+          current: [
+            'temperature_2m',
+            'relative_humidity_2m',
+            'apparent_temperature',
+            'surface_pressure',
+            'wind_speed_10m',
+            'wind_direction_10m',
+            'wind_gusts_10m',
+            'weather_code',
+            'cloud_cover',
+            'uv_index',
+            'precipitation',
+          ].join(','),
+          daily: ['sunrise', 'sunset', 'uv_index_max'].join(','),
+          timezone: 'Europe/Warsaw',
+          forecast_days: 1,
+        });
 
-      const c = json.current;
-      const wCode = c.weather_code ?? 0;
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+
+        const c = json.current;
+        temperature = c.temperature_2m;
+        feelsLike = c.apparent_temperature;
+        humidity = c.relative_humidity_2m;
+        pressure = c.surface_pressure;
+        windSpeed = c.wind_speed_10m;
+        windDirection = c.wind_direction_10m;
+        windGusts = c.wind_gusts_10m;
+        cloudCover = c.cloud_cover;
+        uvIndex = c.uv_index;
+        precipitation = c.precipitation;
+        wCode = c.weather_code ?? 0;
+        sunrise = json.daily?.sunrise?.[0];
+        sunset = json.daily?.sunset?.[0];
+        uvIndexMax = json.daily?.uv_index_max?.[0];
+      } else {
+        // Historical day – fetch hourly data and pick noon (hour index 12)
+        const params = new URLSearchParams({
+          latitude: LATITUDE,
+          longitude: LONGITUDE,
+          hourly: HOURLY_FIELDS.join(','),
+          daily: ['sunrise', 'sunset', 'uv_index_max'].join(','),
+          timezone: 'Europe/Warsaw',
+          start_date: targetDate,
+          end_date: targetDate,
+        });
+
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+
+        const h = json.hourly;
+        const idx = 12; // noon
+        temperature = h.temperature_2m?.[idx];
+        feelsLike = h.apparent_temperature?.[idx];
+        humidity = h.relative_humidity_2m?.[idx];
+        pressure = h.surface_pressure?.[idx];
+        windSpeed = h.wind_speed_10m?.[idx];
+        windDirection = h.wind_direction_10m?.[idx];
+        windGusts = h.wind_gusts_10m?.[idx];
+        cloudCover = h.cloud_cover?.[idx];
+        uvIndex = h.uv_index?.[idx];
+        precipitation = h.precipitation?.[idx];
+        wCode = h.weather_code?.[idx] ?? 0;
+        sunrise = json.daily?.sunrise?.[0];
+        sunset = json.daily?.sunset?.[0];
+        uvIndexMax = json.daily?.uv_index_max?.[0];
+      }
 
       setData({
-        temperature: c.temperature_2m,
-        feelsLike: c.apparent_temperature,
-        humidity: c.relative_humidity_2m,
-        pressure: c.surface_pressure,
-        windSpeed: c.wind_speed_10m,
-        windDirection: c.wind_direction_10m,
-        windDirectionText: getWindDirection(c.wind_direction_10m),
-        windGusts: c.wind_gusts_10m,
-        cloudCover: c.cloud_cover,
-        uvIndex: c.uv_index,
-        precipitation: c.precipitation,
+        temperature,
+        feelsLike,
+        humidity,
+        pressure,
+        windSpeed,
+        windDirection,
+        windDirectionText: windDirection !== null && windDirection !== undefined ? getWindDirection(windDirection) : undefined,
+        windGusts,
+        cloudCover,
+        uvIndex,
+        precipitation,
         weatherCode: wCode,
         weatherDescription: WMO_DESCRIPTIONS[wCode] ?? 'Nieznane',
         weatherIcon: WMO_ICONS[wCode] ?? '🌡️',
-        sunrise: json.daily?.sunrise?.[0],
-        sunset: json.daily?.sunset?.[0],
-        uvIndexMax: json.daily?.uv_index_max?.[0],
+        sunrise,
+        sunset,
+        uvIndexMax,
         source: 'internet',
       });
       setLastUpdated(new Date());
@@ -126,13 +191,17 @@ export function useOpenMeteo() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [targetDate]);
 
   useEffect(() => {
+    setLoading(true);
+    setData(null);
     fetchWeather();
-    const interval = setInterval(fetchWeather, REFRESH_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [fetchWeather]);
+    if (!targetDate) {
+      const interval = setInterval(fetchWeather, REFRESH_INTERVAL_MS);
+      return () => clearInterval(interval);
+    }
+  }, [fetchWeather, targetDate]);
 
   return { data, loading, error, lastUpdated, refresh: fetchWeather };
 }

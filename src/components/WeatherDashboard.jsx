@@ -1,7 +1,22 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import SensorCard from './SensorCard';
 import StatusBar from './StatusBar';
 import { useWeatherData } from '../hooks/useWeatherData';
+
+function getTargetDate(offset) {
+  if (offset === 0) return null;
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+}
+
+function formatDateLabel(offset) {
+  if (offset === 0) return 'Dziś';
+  if (offset === -1) return 'Wczoraj';
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' });
+}
 
 function formatSunTime(isoString) {
   if (!isoString) return null;
@@ -26,7 +41,9 @@ function co2Label(ppm) {
 }
 
 export default function WeatherDashboard() {
-  const { data, loading, error, lastUpdated, refresh, mqttConnected, mqttEnabled } = useWeatherData();
+  const [dateOffset, setDateOffset] = useState(0);
+  const targetDate = useMemo(() => getTargetDate(dateOffset), [dateOffset]);
+  const { data, loading, error, lastUpdated, refresh, mqttConnected, mqttEnabled } = useWeatherData(targetDate);
   const [seniorMode, setSeniorMode] = useState(true);
 
   if (loading) {
@@ -85,6 +102,26 @@ export default function WeatherDashboard() {
         lastUpdated={lastUpdated}
         onRefresh={refresh}
       />
+
+      {/* Day navigation */}
+      <div className="day-nav">
+        <button
+          className="day-nav-btn"
+          onClick={() => setDateOffset(o => o - 1)}
+          aria-label="Poprzedni dzień"
+        >
+          ◀
+        </button>
+        <span className="day-nav-label">{formatDateLabel(dateOffset)}</span>
+        <button
+          className="day-nav-btn"
+          onClick={() => setDateOffset(o => o + 1)}
+          disabled={dateOffset >= 0}
+          aria-label="Następny dzień"
+        >
+          ▶
+        </button>
+      </div>
 
       {/* Primary sensors */}
       <section className="section-title">Temperatura i wilgotność</section>

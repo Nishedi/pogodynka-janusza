@@ -289,6 +289,64 @@
 }
 
 /* ──────────────────────────────────────────────
+   Day navigation
+────────────────────────────────────────────── */
+.day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.day-nav-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 120px;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.day-nav-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 5px 12px;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+
+.day-nav-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.15);
+}
+
+.day-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.senior .day-nav {
+  padding: 14px 16px;
+  gap: 24px;
+}
+
+.senior .day-nav-label {
+  font-size: 1.3rem;
+  min-width: 160px;
+}
+
+.senior .day-nav-btn {
+  font-size: 1.2rem;
+  padding: 8px 18px;
+}
+
+/* ──────────────────────────────────────────────
    Footer
 ────────────────────────────────────────────── */
 .footer {
